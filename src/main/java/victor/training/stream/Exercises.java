@@ -35,7 +35,8 @@ public class Exercises {
   }
 
   public Order p2_findOrderById(List<Order> orders, int orderId) {
-    // TODO simplify; then return Optional<> and fix tests
+    // TODO 1: rewrite with streams
+    // TODO 2: return Optional<> and fix the tests
     for (Order order : orders) {
       if (order.id() == orderId) {
         return order;
@@ -44,6 +45,7 @@ public class Exercises {
     return null;
   }
 
+  // TODO all the following: rewrite with streams
   public boolean p3_hasActiveOrders(List<Order> orders) {
     for (Order order : orders) {
       if (order.status() == COMPLETED) {
@@ -93,13 +95,6 @@ public class Exercises {
     }
     return returnReasons;
     // Hint: Optional#stream()
-  }
-
-  static class LatestOrderComparator implements Comparator<Order> {
-    @Override
-    public int compare(Order o1, Order o2) {
-      return o2.createdOn().compareTo(o1.createdOn());
-    }
   }
 
   /**
@@ -233,6 +228,13 @@ public class Exercises {
     }
     return result;
 
+  }
+
+  static class LatestOrderComparator implements Comparator<Order> {
+    @Override
+    public int compare(Order o1, Order o2) {
+      return o2.createdOn().compareTo(o1.createdOn());
+    }
   }
 
 }
