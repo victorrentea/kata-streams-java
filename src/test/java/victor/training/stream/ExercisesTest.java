@@ -49,7 +49,7 @@ class ExercisesTest {
 
     assertThat(dtos).hasSize(1);
     assertThat(dtos.get(0).status()).isEqualTo(COMPLETED);
-    assertThat(dtos.get(0).totalPrice()).isEqualTo(TEN);
+    assertThat(dtos.get(0).totalPrice()).isEqualTo(10.0);
     assertThat(dtos.get(0).creationDate()).isEqualTo(TODAY);
     assertThat(dtos.get(0).paymentMethod()).isEqualTo(CARD);
   }
@@ -140,18 +140,19 @@ class ExercisesTest {
 
   @Test
   void p6_completedTotalSum() {
-    Order a = new Order().total(10);
-    Order b = new Order().total(1);
+    Order a = new Order(COMPLETED).total(10);
+    Order b = new Order(COMPLETED).total(1);
+    Order c = new Order(CANCELLED).total(7);
 
-    long actual = sut.p6_completedTotalSum(List.of(a, b));
+    long actual = sut.p6_completedTotalSum(List.of(a, b, c));
 
     assertThat(actual).isEqualTo(11);
   }
 
   @Test
   void p6_completedTotalSum_rounding() {
-    Order a = new Order().total(10.5);
-    Order b = new Order().total(10.5);
+    Order a = new Order(COMPLETED).total(10.5);
+    Order b = new Order(COMPLETED).total(10.5);
 
     long actual = sut.p6_completedTotalSum(List.of(a, b));
 
