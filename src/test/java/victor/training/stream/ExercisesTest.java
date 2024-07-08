@@ -49,7 +49,7 @@ class ExercisesTest {
 
     assertThat(dtos).hasSize(1);
     assertThat(dtos.get(0).status()).isEqualTo(COMPLETED);
-    assertThat(dtos.get(0).totalPrice()).isEqualTo(TEN);
+    assertThat(dtos.get(0).totalPrice()).isEqualTo(10.0);
     assertThat(dtos.get(0).creationDate()).isEqualTo(TODAY);
     assertThat(dtos.get(0).paymentMethod()).isEqualTo(CARD);
   }
@@ -179,7 +179,7 @@ class ExercisesTest {
     Order b_cash = new Order().paymentMethod(CASH_ON_DELIVERY);
     Order c_card = new Order().paymentMethod(CARD);
 
-    Map<PaymentMethod, List<Order>> actual = sut.p8_ordersGroupedByPaymentMethod(List.of(a_card, b_cash, c_card));
+    Map<PaymentMethod, Set<Order>> actual = sut.p8_ordersGroupedByPaymentMethod(List.of(a_card, b_cash, c_card));
 
     assertThat(actual.get(CASH_ON_DELIVERY)).containsExactly(b_cash);
     assertThat(actual.get(CARD)).containsExactly(a_card, c_card);

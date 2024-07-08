@@ -11,6 +11,10 @@ import java.util.Optional;
 
 public class Order {
 
+	public boolean hasSpecialOffer() {
+		return orderLines().stream().anyMatch(OrderLine::isSpecialOffer);
+	}
+
 	public enum Status {
 		PLACED, COMPLETED, CANCELLED
 	}

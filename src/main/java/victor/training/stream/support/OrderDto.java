@@ -11,7 +11,7 @@ public record OrderDto(double totalPrice,
                        PaymentMethod paymentMethod,
                        Status status) {
 
-  public OrderDto(Order order) {
+  public OrderDto(Order order) { // f(Order):OrderDto
     this(order.total(),
         order.createdOn(),
         order.paymentMethod(),

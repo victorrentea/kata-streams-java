@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
 import static victor.training.stream.support.Order.Status.COMPLETED;
 
 public class Exercises {
@@ -20,62 +23,96 @@ public class Exercises {
     // TODO 1: simplify
     // TODO 2: use the OrderDto constructor
     // TODO 3: use the OrderMapper.toDto method
-    List<OrderDto> dtos = new ArrayList<>();
-    for (Order order : orders) {
-      if (order.status() == COMPLETED) {
-        OrderDto dto = new OrderDto(
-            order.total(),
-            order.createdOn(),
-            order.paymentMethod(),
-            order.status());
-        dtos.add(dto);
-      }
-    }
-    return dtos;
+//    List<OrderDto> dtos = new ArrayList<>();
+//    for (Order order : orders) {
+//      if (order.status() == COMPLETED) {
+//        OrderDto dto = toDto(order);
+//        dtos.add(dto);
+//      }
+//    }
+    // #1 = instance to call this instance method
+    // #2 = actual 1st param of that method
+//    BiFunction<Exercises, Order,OrderDto> f= Exercises::toDto;
+
+    Function<Order,OrderDto> g = this::toDto;
+
+    return orders.stream()
+        .filter(order -> order.status() == COMPLETED)
+//        .map(order -> toDto(order))
+//        .map(this::toDto)
+//        .map(OrderDto::new)
+        .map(Exercises::toDtoStatic)
+//        .collect(Collectors.toList()); // java 8, mutable
+        .toList();
+  }
+
+  private static OrderDto toDtoStatic(Order order) {
+    OrderDto dto = new OrderDto(
+        order.total(),
+        order.createdOn(),
+        order.paymentMethod(),
+        order.status());
+    return dto;
+  }
+
+  private OrderDto toDto(Order order) {
+    OrderDto dto = new OrderDto(
+        order.total(),
+        order.createdOn(),
+        order.paymentMethod(),
+        order.status());
+    return dto;
   }
 
   public Order p2_findOrderById(List<Order> orders, int orderId) {
     // TODO 1: rewrite with streams
     // TODO 2: return Optional<> and fix the tests
-    for (Order order : orders) {
-      if (order.id() == orderId) {
-        return order;
-      }
-    }
-    return null;
+//    for (Order order : orders) {
+//      if (order.id() == orderId) {
+//        return order;
+//      }
+//    }
+//    return null;
+    return orders.stream().filter(o -> o.id() == orderId).findFirst().orElse(null);
   }
 
   // TODO all the following: rewrite with streams
   public boolean p3_hasActiveOrders(List<Order> orders) {
-    for (Order order : orders) {
-      if (order.status() == COMPLETED) {
-        return true;
-      }
-    }
-    return false;
+//    for (Order order : orders) {
+//      if (order.status() == COMPLETED) {
+//        return true;
+//      }
+//    }
+//   return false;
+//    return orders.stream().filter(o->o.status() == COMPLETED).count() > 0;
+    return orders.stream().anyMatch(o -> o.status() == COMPLETED);//short-circuiting
+
   }
 
   /**
    * @return order with the max total() that does NOT contain a special offer line
    */
   public Order p4_maxPriceOrder(List<Order> orders) {
-    Order maxOrder = null;
-    for (Order order : orders) {
-      boolean hasSpecialOffer = false;
-      for (OrderLine orderLine : order.orderLines()) {
-        if (orderLine.isSpecialOffer()) {
-          hasSpecialOffer = true;
-          break;
-        }
-      }
-      if (hasSpecialOffer) {
-        continue;
-      }
-      if (maxOrder == null || order.total() > maxOrder.total()) {
-        maxOrder = order;
-      }
-    }
-    return maxOrder;
+//    Order maxOrder = null;
+//    for (Order order : orders) {
+//      boolean hasSpecialOffer = order.hasSpecialOffer();
+//
+//      if (hasSpecialOffer) {
+//        continue;
+//      }
+//      if (maxOrder == null || order.total() > maxOrder.total()) {
+//        maxOrder = order;
+//      }
+//    }
+    return orders.stream()
+//        .filter(order -> !order.hasSpecialOffer()) // traditional
+        .filter(not(Order::hasSpecialOffer))
+//        .max((o1, o2) -> Double.compare(o1.total(), o2.total()))
+        .max(Comparator.comparingDouble(Order::total))
+        .orElse(null)
+    ;
+
+//    return maxOrder;
   }
 
   /**
@@ -113,31 +150,39 @@ public class Exercises {
    * @return the products bought by the customer, with no duplicates, sorted by Product.name
    */
   public List<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
-    Set<Product> products = new HashSet<>();
-    for (Order order : orders) {
-      for (OrderLine line : order.orderLines()) {
-        products.add(line.product());
-      }
-    }
-    List<Product> sorted = new ArrayList<>(products);
-    sorted.sort((o1, o2) -> o1.name().compareTo(o2.name()));
-    return sorted;
+    return orders.stream()
+        .flatMap(order -> order.orderLines().stream())
+        .map(OrderLine::product)
+        .sorted(Comparator.comparing(Product::name))
+        .toList();
+//    Set<Product> products = new HashSet<>();
+//    for (Order order : orders) {
+//      for (OrderLine line : order.orderLines()) {
+//        products.add(line.product());
+//      }
+//    }
+//    List<Product> sorted = new ArrayList<>(products);
+//    sorted.sort((o1, o2) -> o1.name().compareTo(o2.name()));
+//    return sorted;
   }
 
   /**
    * see tests for an example
    */
-  public Map<PaymentMethod, List<Order>> p8_ordersGroupedByPaymentMethod(List<Order> orders) {
-    Map<PaymentMethod, List<Order>> map = new HashMap<>();
-    for (Order order : orders) {
-      List<Order> list = map.get(order.paymentMethod());
-      if (list == null) {
-        list = new ArrayList<>();
-        map.put(order.paymentMethod(), list);
-      }
-      list.add(order);
-    }
-    return map;
+  public Map<PaymentMethod, Set<Order>> p8_ordersGroupedByPaymentMethod(List<Order> orders) {
+    return orders.stream()
+        .collect(Collectors.groupingBy(Order::paymentMethod, Collectors.toSet()));
+//        .collect(Collectors.toMap())// when each element from the stream results in a different entry
+//    Map<PaymentMethod, List<Order>> map = new HashMap<>();
+//    for (Order order : orders) {
+//      List<Order> list = map.get(order.paymentMethod());
+//      if (list == null) {
+//        list = new ArrayList<>();
+//        map.put(order.paymentMethod(), list);
+//      }
+//      list.add(order);
+//    }
+//    return map;
   }
 
   /**
