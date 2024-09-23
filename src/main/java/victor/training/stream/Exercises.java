@@ -7,6 +7,7 @@ import victor.training.stream.support.Order.Status;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 import java.util.function.*;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
 
 public class Exercises {
@@ -138,7 +140,9 @@ public class Exercises {
    */
   public Order p4_maxPriceOrder(List<Order> orders) {
     return orders.stream()
+//        .filter(Order::noSpecialOffers)
         .filter(order -> !order.hasSpecialOffer())
+//        .filter(not(Order::hasSpecialOffer)) // a bit to geek for the first years
         .max(comparing(Order::total))
         .orElse(null);
   }
@@ -147,19 +151,44 @@ public class Exercises {
    * @return last 3 returnReason()s sorted descending by Order.createdOn
    */
   public List<String> p5_last3Orders(List<Order> orders) {
-    List<Order> copy = new ArrayList<>(orders);
-    copy.sort(new LatestOrderComparator());
-    List<String> returnReasons = new ArrayList<>();
-    for (Order order : copy) {
-      if (order.returnReason().isPresent()) {
-        returnReasons.add(order.returnReason().get());
-        if (returnReasons.size() == 3) {
-          break;
-        }
-      }
-    }
-    return returnReasons;
-    // Hint: Optional#stream()
+//    List<Order> copy = new ArrayList<>(orders);
+//    copy.sort(new LatestOrderComparator());
+//    List<String> returnReasons = new ArrayList<>();
+//    for (Order order : copy) {
+//      if (order.returnReason().isPresent()) {
+//        returnReasons.add(order.returnReason().get());
+//        if (returnReasons.size() == 3) {
+//          break;
+//        }
+//      }
+//    }
+//    return returnReasons;
+
+    Order o = new Order();
+    Optional<String> opt = o.returnReason();
+    Stream<String> stream = opt.stream(); // will contain 1 or 0
+
+    return orders.stream()
+        .sorted(new LatestOrderComparator())
+//        .sorted(Comparator.<Order, LocalDate>comparing(Order::createdOn).reversed())
+
+        // java 8 best:
+//        .filter(order -> order.returnReason().isPresent())
+//        .map(order -> order.returnReason().orElseThrow()) // misleading. will NEVER THROW
+
+        //java 11: Optional#stream
+        .flatMap(order -> order.returnReason().stream())
+//         I am joining a series of Stream<String> with 0 or 1 element each
+
+        // ::-dots mania
+//        .map(Order::returnReason)
+//        .flatMap(Optional::stream)
+
+
+        .limit(3)
+        .toList(); // java 17
+
+
   }
 
   /**
