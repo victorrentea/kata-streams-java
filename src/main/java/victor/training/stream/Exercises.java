@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,17 +21,27 @@ public class Exercises {
     // TODO 1: simplify
     // TODO 2: use the OrderDto constructor
     // TODO 3: use the OrderMapper.toDto method
-    List<OrderDto> dtos = new ArrayList<>();
-    for (Order order : orders) {
-      if (order.status() == COMPLETED) {
-        OrderDto dto = new OrderDto(
+    List<OrderDto> dtos = orders.stream()
+        // anonymous interface impl
+//        .filter(new Predicate<Order>() {
+//          @Override
+//          public boolean test(Order order) {
+//            return false;
+//          }
+//        })
+//        .filter((Order order) -> { // ~ WHERE..
+//              return false;
+//            });
+//        .filter((Order order) -> order.status()==COMPLETED);
+        .filter(order -> order.status() == COMPLETED)
+        .map(order -> new OrderDto(
             order.total(),
             order.createdOn(),
             order.paymentMethod(),
-            order.status());
-        dtos.add(dto);
-      }
-    }
+            order.status()))
+        .collect(Collectors.toList());
+
+
     return dtos;
   }
 
