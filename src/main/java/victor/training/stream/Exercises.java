@@ -13,6 +13,8 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+
 public class Exercises {
 
   public List<OrderDto> p1_activeOrders(List<Order> orders) {
@@ -82,7 +84,7 @@ public class Exercises {
 //        .filter((Predicate<Order>)p3) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
         .filter(Order::isCompleted)
         .map(orderMapper::toDto)
-        .collect(Collectors.toList());
+        .collect(toList());
 //    Function<Order, OrderDto> no = Exercises::toDto; // java compiler won't know on what INSTANCE to call that func
 //    BiFunction<Exercises, Order, OrderDto> aRefToAInstanceMethodWihoutSpecifyingTheInstance =
 //        Exercises::toDto; // to call it later, I will have to provide an instance of Exercises
@@ -98,7 +100,7 @@ public class Exercises {
 
 
 
-  public Order p2_findOrderById(List<Order> orders, int orderId) {
+  public Optional<Order> p2_findOrderById(List<Order> orders, int orderId) {
     // TODO 1: rewrite with streams
     // TODO 2: return Optional<> and fix the tests
 //    for (Order order : orders) {
@@ -111,18 +113,22 @@ public class Exercises {
 //      .findAny() // first one found by any threads (of parallelStream) => faster
     return orders.stream() // useful when doing HEAVY CPU work per element
         .filter(order -> order.id() == orderId)
-        .findFirst() // === findAny, but with more exact name if not using paralleStream
-        .orElse(null);
+        .findFirst(); // === findAny, but with more exact name if not using paralleStream
   }
 
   // TODO all the following: rewrite with streams
   public boolean p3_hasActiveOrders(List<Order> orders) {
-    for (Order order : orders) {
-      if (order.isCompleted()) {
-        return true;
-      }
-    }
-    return false;
+//    for (Order order : orders) {
+//      if (order.isCompleted()) {
+//        return true;
+//      }
+//    }
+//    return false;
+
+//    return orders.stream().filter(Order::isCompleted).collect(toList()).size() > 0;
+//    return !orders.stream().filter(Order::isCompleted).collect(toList()).isEmpty();
+//    return orders.stream().filter(Order::isCompleted).count() > 0;
+    return orders.stream().anyMatch(Order::isCompleted); // simpler to read, and less memory wasteful
   }
 
   /**

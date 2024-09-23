@@ -12,15 +12,13 @@ import victor.training.stream.support.Product;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static java.time.LocalDate.now;
 import static java.time.LocalDate.parse;
 import static java.time.Month.FEBRUARY;
@@ -59,14 +57,17 @@ class ExercisesTest {
     Order o = new Order(1);
     List<Order> orders = List.of(o, new Order(2));
     // Note: AssertJ is preferred over JUnit assertions today
-    Order actual = sut.p2_findOrderById(orders, 1);
-    assertThat(actual).isEqualTo(o);
+    Optional<Order> actual = sut.p2_findOrderById(orders, 1);
+    assertThat(actual.get()).isEqualTo(o);
   }
 
   @Test
   void p2_findOrderById_notFound() {
-    Order actual = sut.p2_findOrderById(List.of(new Order(7)), 9999);
-    assertThat(actual).isNull();
+    Optional<Order> actual = sut.p2_findOrderById(
+        List.of(new Order(7)), 9999);
+//    System.out.println(actual.get().total());
+//    System.out.println(actual.orElseThrow().total());
+    assertThat(actual).isEmpty();
   }
 
   @Test
