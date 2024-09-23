@@ -227,17 +227,12 @@ public class Exercises {
    * sorted by Product.name
    */
   public List<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
-    Set<Product> products = orders.stream()
+    return orders.stream()
         .flatMap(order ->order.orderLines().stream())
         .map(OrderLine::product)
-        .collect(Collectors.toSet());
-
-    List<Product> sorted = new ArrayList<>(products); // distinct element
-    sorted.sort(comparing(Product::name));
-    return sorted;
-
-//    return orders.stream()
-
+        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
+        .sorted(comparing(Product::name))
+        .collect(Collectors.toList());
   }
 
   /**
