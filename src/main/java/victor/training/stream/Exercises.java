@@ -2,16 +2,14 @@ package victor.training.stream;
 
 import victor.training.stream.support.*;
 import victor.training.stream.support.Order.PaymentMethod;
+import victor.training.stream.support.Order.Status;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Month;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,20 +21,47 @@ public class Exercises {
     // TODO 2: use the OrderDto constructor
     // TODO 3: use the OrderMapper.toDto method
 //    Function<Order, OrderDto> f = order -> toDto(order); // scary in var a function
-    Function<Order, OrderDto> f = order -> toDto(order);
+//    Function<Order, OrderDto> f = order -> toDto(order);
+
+
+    List<String> strings = new ArrayList<>();
+    Consumer<String> a = strings::add; // java ignores your result type
+    Predicate<String> a2 = strings::add; // based on a string -> boolean
+    Function<String, Boolean> a3 = strings::add;
 
     long l = System.currentTimeMillis();
+    // 1) ref to a static method
     Supplier<Long> timeSupplier = () -> System.currentTimeMillis();
+    Supplier<Long> timeSupplier2 = System::currentTimeMillis;
 
+    // 2) ref to an instance method that I don't have yet
+    Predicate<Order> p = Order::isCompleted;
+
+    // 3) ref to an instance method ('println') from an instance that I HAVE already (System.out)
+    // Note! here the order to print is not yet available
+    Order o = new Order();
+    Supplier<Boolean> p2 = o::isCompleted;
     Consumer<Order> c = order -> System.out.println(order);
-    Consumer<Order> c2 = order -> order.setTotal(0);
+    Consumer<String> cs = order -> System.out.println(order);
+    Consumer<Order> c2 = System.out::println;
 
+    // 4) ref to a constructor
     Supplier<Order> s = () -> new Order();
+    Supplier<Order> s2 = Order::new;
+    Function<Integer, Order> s3 = Order::new;
+    BiFunction<Integer, Status, Order> s3_2 = Order::new;
+//    Function3,4,5,6,7,8,9,10 // from Jooq or vavr libraries
+//   TriFunction<Integer, Status, Order> s3_2 = Order::new;
+    Supplier<Order> s4 = () -> new Order(1);
+
+    System.out.println("order");
+
+    Consumer<Order> c3 = order -> order.setTotal(0);
+
 
     // "Target Typing" = -> or :: expressions can be assigned to different types
     // the compiler 'converts' that expr to what you declared you need
-    Predicate<Order> p = Order::isCompleted;
-    Function<Order, Boolean> p2 = Order::isCompleted;
+    Function<Order, Boolean> p21 = Order::isCompleted;
     MyPred p3 = Order::isCompleted;
 //    Object p4doesNotCompile = Order::isCompleted;
     Object p5WorksButWeird = (MyPred)Order::isCompleted;
@@ -53,21 +78,24 @@ public class Exercises {
 //              return false;
 //            });
 //        .filter((Order order) -> order.status()==COMPLETED);
-//        .filter(order -> order.isCompleted())
-        .filter(p) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
+//        .filter(order -> order.isCompleted() )
+//        .filter(p) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
 //        .filter((Predicate<Order>)p3) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
-        .map(order -> toDto(order))
+        .filter(Order::isCompleted)
+        .map(OrderMapper::toDto)
         .collect(Collectors.toList());
+//    Function<Order, OrderDto> no = Exercises::toDto; // java compiler won't know on what INSTANCE to call that func
+//    BiFunction<Exercises, Order, OrderDto> aRefToAInstanceMethodWihoutSpecifyingTheInstance =
+//        Exercises::toDto; // to call it later, I will have to provide an instance of Exercises
+//    Exercises e = this;
+//    OrderDto dto = aRefToAInstanceMethodWihoutSpecifyingTheInstance.apply(e, new Order());
+//
+//    Function<Order, OrderDto> yessWorksToo=new Exercises()::toDto;
+//    Function<Order, OrderDto> yess=this::toDto;
     return dtos;
   }
 
-  private OrderDto toDto(Order order) {
-    return new OrderDto(
-        order.total(),
-        order.createdOn(),
-        order.paymentMethod(),
-        order.status());
-  }
+
 
   public Order p2_findOrderById(List<Order> orders, int orderId) {
     // TODO 1: rewrite with streams

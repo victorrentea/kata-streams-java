@@ -44,6 +44,10 @@ public class Order {
 	public Order(Integer id) {
 		this.id = id;
 	}
+	public Order(Integer id, Status status) {
+		this.id = id;
+    this.status = status;
+  }
 
 
 	public List<OrderLine> orderLines() {
