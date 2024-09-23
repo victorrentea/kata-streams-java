@@ -151,7 +151,8 @@ public class Exercises {
     // comparator is a single-method-interface @FUnctionalInterface
 //    Comparator<Order> compareByTotal = (o1, o2) ->
 //        Double.compare(o2.total(), o1.total());
-    Collections.sort(regularOrders, comparing(Order::total));
+    Comparator<Order> comparing = comparing(Order::total);
+    Collections.sort(regularOrders, comparing.reversed());
     // sort the list DESCENDING and get(0)
 //    Order maxOrder = null;
 //    for (Order order : regularOrders) {
