@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
 public class Exercises {
@@ -226,13 +227,16 @@ public class Exercises {
    * @return the products bought by the customer, with no duplicates,
    * sorted by Product.name
    */
-  public List<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
+  public Set<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
     return orders.stream()
         .flatMap(order ->order.orderLines().stream())
         .map(OrderLine::product)
-        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
+//        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
         .sorted(comparing(Product::name))
-        .collect(Collectors.toList());
+//        .collect(Collectors.toList());
+        .collect(toCollection(LinkedHashSet::new));
+
+    // new LinkedHashSet<>() preserves the order of addition
   }
 
   /**
@@ -277,7 +281,7 @@ public class Exercises {
    * @return the names of all products from previous exercise, joined with a ","
    */
   public String pA_productNames(List<Order> orders) {
-    List<Product> products = p7_productsSorted(orders);
+    Collection<Product> products = p7_productsSorted(orders);
     StringBuilder sb = new StringBuilder();
     for (Product product : products) {
       sb.append(product.name()).append(",");

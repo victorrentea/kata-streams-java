@@ -14,10 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static java.time.LocalDate.now;
 import static java.time.LocalDate.parse;
@@ -170,7 +167,7 @@ class ExercisesTest {
         .add(new OrderLine(table, 1))
         .add(new OrderLine(chair, 1));
 
-    List<Product> actual = sut.p7_productsSorted(List.of(order1, order2));
+    Collection<Product> actual = sut.p7_productsSorted(List.of(order1, order2));
 
     assertThat(actual).containsExactly(chair, table);
   }
