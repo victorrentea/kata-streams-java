@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -144,10 +143,14 @@ public class Exercises {
   public Order p4_maxPriceOrder(List<Order> orders) {
     return orders.stream()
 //        .filter(Order::noSpecialOffers)
-        .filter(order -> !order.hasSpecialOffer())
+        .filter(order -> fetchFromDB(order)) // executes once/element => performance issue!
 //        .filter(not(Order::hasSpecialOffer)) // a bit to geek for the first years
         .max(comparing(Order::total))
         .orElse(null);
+  }
+
+  private static boolean fetchFromDB(Order order) {
+    return !order.hasSpecialOffer();
   }
 
   /**
@@ -333,55 +336,85 @@ public class Exercises {
    * @return orders grouped by Month, and then by PaymentMethod
    */
   public Map<Month, Map<PaymentMethod, List<Order>>> pB_ordersByPaymentPerMonth(List<Order> orders) {
-    Map<Month, Map<PaymentMethod, List<Order>>> result = new HashMap<>();
-    for (Order order : orders) {
-      Map<PaymentMethod, List<Order>> map = result.get(order.createdOn().getMonth());
-      if (map == null) {
-        map = new HashMap<>();
-        result.put(order.createdOn().getMonth(), map);
-      }
-      List<Order> list = map.get(order.paymentMethod());
-      if (list == null) {
-        list = new ArrayList<>();
-        map.put(order.paymentMethod(), list);
-      }
-      list.add(order);
-    }
-    return result;
+//    Map<Month, Map<PaymentMethod, List<Order>>> result = new HashMap<>();
+//    for (Order order : orders) {
+//      Map<PaymentMethod, List<Order>> map = result.get(order.createdOn().getMonth());
+//      if (map == null) {
+//        map = new HashMap<>();
+//        result.put(order.createdOn().getMonth(), map);
+//      }
+//      List<Order> list = map.get(order.paymentMethod());
+//      if (list == null) {
+//        list = new ArrayList<>();
+//        map.put(order.paymentMethod(), list);
+//      }
+//      list.add(order);
+//    }
+//    return result;
+    return orders.stream()
+        .collect(groupingBy(
+            order -> order.createdOn().getMonth(),
+            groupingBy(Order::paymentMethod)));
   }
 
   /**
    * @return the first cell of a semicolon-separated file, as integers
    */
   public Set<Integer> pC_csvLinesInAllFilesInFolder(File file) throws IOException {
+    List<String> allLines = Files.readAllLines(file.toPath());//  BAD: loads all in memory. a huge file can
+    // cause an OutOfMemoryError!!
+
+    // Streams can traverse a file line by line, a result of a query in DB
+    // THIS IS BETTER:
     try (Stream<String> lines = Files.lines(file.toPath())) {
       return lines
           .filter(s -> !s.isBlank())
           .map(line -> Integer.parseInt(line.split(";")[0]))
-          .collect(Collectors.toSet());
+          .collect(toSet());
     }
+
+
+//    try(BufferedReader reader = Files.newBufferedReader(file.toPath())) {
+//      // without java 8:
+//      Set<Integer> result = new HashSet<>();
+//      String line;
+//      while ((line = reader.readLine()) != null) {
+//        if (!line.isBlank()) {
+//          result.add(Integer.parseInt(line.split(";")[0]));
+//        }
+//      }
+//      return result;
+//    }
   }
 
   /**
    * @return the elements in Fibonacci sequence between startIndex and endIndex
    */
   public List<Integer> pD_fib(int startIndex, int endIndex) {
-    List<Integer> result = new ArrayList<>();
-    int a = 1;
-    int b = 1;
-    int c = a + b;
-    int index = 0;
-    while (index < endIndex) {
-      if (index >= startIndex) {
-        result.add(a);
-      }
-      a = b;
-      b = c;
-      c = a + b;
-      index++;
-    }
-    return result;
+    // 1,1,2,3,5,8,13,21,34,55,89,144,233,377,610
 
+    return Stream.iterate(new int[]{1, 1}, pair -> new int[]{pair[1], pair[0] + pair[1]})
+        .map(arr -> arr[0])
+        .limit(endIndex)
+        .skip(startIndex)
+        .toList();
+
+//    List<Integer> result = new ArrayList<>();
+//    int a = 1;
+//    int b = 1;
+//    int c = a + b;
+//    int index = 0;
+//    while (index < endIndex) {
+//      if (index >= startIndex) {
+//        result.add(a);
+//      }
+//      a = b;
+//      b = c;
+//      c = a + b;
+//      index++;
+//    }
+//    return result;
+//return null;
   }
 
   static class LatestOrderComparator implements Comparator<Order> {
