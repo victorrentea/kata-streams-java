@@ -139,27 +139,11 @@ public class Exercises {
   public Order p4_maxPriceOrder(List<Order> orders) {
     List<Order> regularOrders = orders.stream()
         .filter(order -> !order.hasSpecialOffer())
-
+        .sorted(Comparator.<Order, Double>comparing(Order::total).reversed())
         .collect(toList());
 
-//    Comparator<Order> compareByTotal = new Comparator<>() {
-//      @Override
-//      public int compare(Order o1, Order o2) {
-//        return Double.compare(o2.total(), o1.total());
-//      }
-//    };
-    // comparator is a single-method-interface @FUnctionalInterface
-//    Comparator<Order> compareByTotal = (o1, o2) ->
-//        Double.compare(o2.total(), o1.total());
-    Comparator<Order> comparing = comparing(Order::total);
-    Collections.sort(regularOrders, comparing.reversed());
-    // sort the list DESCENDING and get(0)
-//    Order maxOrder = null;
-//    for (Order order : regularOrders) {
-//      if (maxOrder == null || order.total() > maxOrder.total()) {
-//        maxOrder = order;
-//      }
-//    }
+//    Collections.sort(regularOrders, Comparator.<Order, Double>comparing(Order::total).reversed());
+
     if (regularOrders.isEmpty()) return null;
     return regularOrders.get(0);
   }
