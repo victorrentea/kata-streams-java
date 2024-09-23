@@ -223,18 +223,21 @@ public class Exercises {
   }
 
   /**
-   * @return the products bought by the customer, with no duplicates, sorted by Product.name
+   * @return the products bought by the customer, with no duplicates,
+   * sorted by Product.name
    */
   public List<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
-    Set<Product> products = new HashSet<>();
-    for (Order order : orders) {
-      for (OrderLine line : order.orderLines()) {
-        products.add(line.product());
-      }
-    }
-    List<Product> sorted = new ArrayList<>(products);
-    sorted.sort((o1, o2) -> o1.name().compareTo(o2.name()));
+    Set<Product> products = orders.stream()
+        .flatMap(order ->order.orderLines().stream())
+        .map(OrderLine::product)
+        .collect(Collectors.toSet());
+
+    List<Product> sorted = new ArrayList<>(products); // distinct element
+    sorted.sort(comparing(Product::name));
     return sorted;
+
+//    return orders.stream()
+
   }
 
   /**
