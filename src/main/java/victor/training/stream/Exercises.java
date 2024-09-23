@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static victor.training.stream.support.Order.Status.COMPLETED;
 
 public class Exercises {
   private final OrderMapper orderMapper = new OrderMapper();
@@ -21,6 +22,25 @@ public class Exercises {
     // TODO 1: simplify
     // TODO 2: use the OrderDto constructor
     // TODO 3: use the OrderMapper.toDto method
+//    Function<Order, OrderDto> f = order -> toDto(order); // scary in var a function
+    Function<Order, OrderDto> f = order -> toDto(order);
+
+    long l = System.currentTimeMillis();
+    Supplier<Long> timeSupplier = () -> System.currentTimeMillis();
+
+    Consumer<Order> c = order -> System.out.println(order);
+    Consumer<Order> c2 = order -> order.setTotal(0);
+
+    Supplier<Order> s = () -> new Order();
+
+    // "Target Typing" = -> or :: expressions can be assigned to different types
+    // the compiler 'converts' that expr to what you declared you need
+    Predicate<Order> p = Order::isCompleted;
+    Function<Order, Boolean> p2 = Order::isCompleted;
+    MyPred p3 = Order::isCompleted;
+//    Object p4doesNotCompile = Order::isCompleted;
+    Object p5WorksButWeird = (MyPred)Order::isCompleted;
+
     List<OrderDto> dtos = orders.stream()
         // anonymous interface impl
 //        .filter(new Predicate<Order>() {
@@ -33,16 +53,20 @@ public class Exercises {
 //              return false;
 //            });
 //        .filter((Order order) -> order.status()==COMPLETED);
-        .filter(order -> order.status() == COMPLETED)
-        .map(order -> new OrderDto(
-            order.total(),
-            order.createdOn(),
-            order.paymentMethod(),
-            order.status()))
+//        .filter(order -> order.isCompleted())
+        .filter(p) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
+//        .filter((Predicate<Order>)p3) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
+        .map(order -> toDto(order))
         .collect(Collectors.toList());
-
-
     return dtos;
+  }
+
+  private OrderDto toDto(Order order) {
+    return new OrderDto(
+        order.total(),
+        order.createdOn(),
+        order.paymentMethod(),
+        order.status());
   }
 
   public Order p2_findOrderById(List<Order> orders, int orderId) {
@@ -59,7 +83,7 @@ public class Exercises {
   // TODO all the following: rewrite with streams
   public boolean p3_hasActiveOrders(List<Order> orders) {
     for (Order order : orders) {
-      if (order.status() == COMPLETED) {
+      if (order.isCompleted()) {
         return true;
       }
     }
@@ -114,7 +138,7 @@ public class Exercises {
   public int p6_completedTotalSum(List<Order> orders) {
     double sum = 0;
     for (Order order : orders) {
-      if (order.status() == COMPLETED)
+      if (order.isCompleted())
         sum += order.total();
     }
     return (int) sum;
