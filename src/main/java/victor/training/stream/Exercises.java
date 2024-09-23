@@ -170,6 +170,7 @@ public class Exercises {
 
     return orders.stream()
         .sorted(new LatestOrderComparator())
+        .sorted(Comparator.<Order, LocalDate>comparing(Order::createdOn).reversed())
 //        .sorted(Comparator.<Order, LocalDate>comparing(Order::createdOn).reversed())
 
         // java 8 best:
@@ -184,23 +185,28 @@ public class Exercises {
 //        .map(Order::returnReason)
 //        .flatMap(Optional::stream)
 
-
         .limit(3)
         .toList(); // java 17
-
-
   }
 
   /**
    * @return sum of all Order.total(), truncated to int.
    */
   public int p6_completedTotalSum(List<Order> orders) {
-    double sum = 0;
-    for (Order order : orders) {
-      if (order.isCompleted())
-        sum += order.total();
-    }
-    return (int) sum;
+//    double sum = 0;
+//    for (Order order : orders) {
+//      if (order.isCompleted())
+//        sum += order.total();
+//    }
+
+    return (int) orders.stream()
+        .filter(Order::isCompleted)
+//        .map(Order::total)
+////        .sum()// doesnt compile
+////        .reduce(0d, (acc, newValue) -> acc + newValue); // explanation
+//        .reduce(0d, Double::sum);
+        .mapToDouble(Order::total)
+        .sum(); // of DoubleStream/IntStream type (numeric streams)
   }
 
   /**
