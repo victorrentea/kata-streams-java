@@ -132,26 +132,30 @@ public class Exercises {
   }
 
   /**
-   * @return order with the max total() that does NOT contain a special offer line
+   * @return order with the max total()
+   * that does NOT contain a special offer line
    */
   public Order p4_maxPriceOrder(List<Order> orders) {
-    Order maxOrder = null;
-    for (Order order : orders) {
-      boolean hasSpecialOffer = false;
-      for (OrderLine orderLine : order.orderLines()) {
-        if (orderLine.isSpecialOffer()) {
-          hasSpecialOffer = true;
-          break;
-        }
+    List<Order> regularOrders = orders.stream()
+        .filter(order -> !order.hasSpecialOffer())
+        .collect(toList());
+
+    Collections.sort(regularOrders, new Comparator<Order>() {
+      @Override
+      public int compare(Order o1, Order o2) {
+        return Double.compare(o2.total(), o1.total());
       }
-      if (hasSpecialOffer) {
-        continue;
-      }
-      if (maxOrder == null || order.total() > maxOrder.total()) {
-        maxOrder = order;
-      }
-    }
-    return maxOrder;
+    });
+
+    // sort the list DESCENDING and get(0)
+//    Order maxOrder = null;
+//    for (Order order : regularOrders) {
+//      if (maxOrder == null || order.total() > maxOrder.total()) {
+//        maxOrder = order;
+//      }
+//    }
+    if (regularOrders.isEmpty()) return null;
+    return regularOrders.get(0);
   }
 
   /**
