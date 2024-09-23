@@ -193,18 +193,31 @@ public class Exercises {
    * @return sum of all Order.total(), truncated to int.
    */
   public int p6_completedTotalSum(List<Order> orders) {
+    // BAD IDEAS: move the variable to change on the HEAP
+    // AtomicDouble sum = new AtomicDouble(0);
+    // final double[] sum = {0};
+    // var ref = new Object() {double sum = 0;};
+
 //    double sum = 0;
-//    for (Order order : orders) {
-//      if (order.isCompleted())
-//        sum += order.total();
-//    }
+//    orders.parallelStream()
+//        .filter(Order::isCompleted)
+//        .forEach(order -> {
+////          System.out.println(sum); // no problem
+//          sum += order.total(); // does not compile - can't change LOCAL VARs FROM LAMBDAS
+//          // because if this lamba runs in a different thread it would allow
+//          // multiple threads to WRITE on the 'sum' variable.
+//          // Java language does not support multiple threads writing a variable on the stack
+//        });
+    // all the other languages CAN compile it: JS, TS, C#, Kt, Scala
+//    return (int) sum;
 
     return (int) orders.stream()
         .filter(Order::isCompleted)
 //        .map(Order::total)
 ////        .sum()// doesnt compile
 ////        .reduce(0d, (acc, newValue) -> acc + newValue); // explanation
-//        .reduce(0d, Double::sum);
+//        .reduce(0d, Double::sum);  // avoid reduce if possible.
+
         .mapToDouble(Order::total)
         .sum(); // of DoubleStream/IntStream type (numeric streams)
   }
