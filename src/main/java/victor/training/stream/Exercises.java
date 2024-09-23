@@ -13,6 +13,7 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 public class Exercises {
@@ -138,15 +139,19 @@ public class Exercises {
   public Order p4_maxPriceOrder(List<Order> orders) {
     List<Order> regularOrders = orders.stream()
         .filter(order -> !order.hasSpecialOffer())
+
         .collect(toList());
 
-    Collections.sort(regularOrders, new Comparator<Order>() {
-      @Override
-      public int compare(Order o1, Order o2) {
-        return Double.compare(o2.total(), o1.total());
-      }
-    });
-
+//    Comparator<Order> compareByTotal = new Comparator<>() {
+//      @Override
+//      public int compare(Order o1, Order o2) {
+//        return Double.compare(o2.total(), o1.total());
+//      }
+//    };
+    // comparator is a single-method-interface @FUnctionalInterface
+//    Comparator<Order> compareByTotal = (o1, o2) ->
+//        Double.compare(o2.total(), o1.total());
+    Collections.sort(regularOrders, comparing(Order::total));
     // sort the list DESCENDING and get(0)
 //    Order maxOrder = null;
 //    for (Order order : regularOrders) {
