@@ -1,8 +1,11 @@
 package victor.training.stream;
 
-import victor.training.stream.support.*;
+import victor.training.stream.support.Order;
 import victor.training.stream.support.Order.PaymentMethod;
 import victor.training.stream.support.Order.Status;
+import victor.training.stream.support.OrderDto;
+import victor.training.stream.support.OrderLine;
+import victor.training.stream.support.Product;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
-import static java.util.function.Predicate.not;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class Exercises {
 
@@ -69,7 +70,7 @@ public class Exercises {
     Function<Order, Boolean> p21 = Order::isCompleted;
     MyPred p3 = Order::isCompleted;
 //    Object p4doesNotCompile = Order::isCompleted;
-    Object p5WorksButWeird = (MyPred)Order::isCompleted;
+    Object p5WorksButWeird = (MyPred) Order::isCompleted;
 
     List<OrderDto> dtos = orders.stream()
         // anonymous interface impl
@@ -99,9 +100,9 @@ public class Exercises {
 //    Function<Order, OrderDto> yess=this::toDto;
     return dtos;
   }
+
   // imagine @Inject/@Autowired
   private OrderMapper orderMapper = new OrderMapper();
-
 
 
   public Optional<Order> p2_findOrderById(List<Order> orders, int orderId) {
@@ -227,32 +228,64 @@ public class Exercises {
    * @return the products bought by the customer, with no duplicates,
    * sorted by Product.name
    */
-  public Set<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
+  public List<Product> p7_productsSorted(List<Order> orders) { // TODO simplify
     return orders.stream()
-        .flatMap(order ->order.orderLines().stream())
+        .flatMap(order -> order.orderLines().stream())
         .map(OrderLine::product)
-//        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
+        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
         .sorted(comparing(Product::name))
-//        .collect(Collectors.toList());
-        .collect(toCollection(LinkedHashSet::new));
+        .collect(Collectors.toList());
+//        .collect(toCollection(LinkedHashSet::new));
 
     // new LinkedHashSet<>() preserves the order of addition
   }
 
   /**
-   * see tests for an example
+   * see tests for an example; ~ GROUP BY in SQL
    */
   public Map<PaymentMethod, List<Order>> p8_ordersGroupedByPaymentMethod(List<Order> orders) {
-    Map<PaymentMethod, List<Order>> map = new HashMap<>();
-    for (Order order : orders) {
-      List<Order> list = map.get(order.paymentMethod());
-      if (list == null) {
-        list = new ArrayList<>();
-        map.put(order.paymentMethod(), list);
-      }
-      list.add(order);
-    }
-    return map;
+//    Map<PaymentMethod, List<Order>> map = new HashMap<>();
+//    for (Order order : orders) {
+//      List<Order> list = map.get(order.paymentMethod());
+//      if (list == null) {
+//        list = new ArrayList<>();
+//        map.put(order.paymentMethod(), list);
+//      }
+//      list.add(order.createdOn());
+//    }
+//    return map;
+
+    Map<PaymentMethod, Set<LocalDate>> map =
+        orders.stream().collect(groupingBy(
+            Order::paymentMethod, // KEY
+            mapping(Order::createdOn, toSet()) // VALUE
+        ));
+
+    Map<PaymentMethod, Map<LocalDate, List<Order>>> olympics =
+        orders.stream().collect(groupingBy(
+            Order::paymentMethod, // KEY
+            groupingBy(Order::createdOn,
+                mapping(Function.identity(), toList())) // VALUE
+        ));
+
+    Map<PaymentMethod, Set<Order>> mapOfOrders =
+        orders.stream().collect(groupingBy(
+            Order::paymentMethod, // KEY
+            mapping(Function.identity(), toSet()) // VALUE
+//            mapping(Exercises.returningIdentity(), toSet()) // VALUE
+//            mapping(Exercises::returnsSame, toSet()) // VALUE
+        ));
+
+    return orders.stream().collect(groupingBy(Order::paymentMethod));
+  }
+
+  public static <T> T returnsSame(T t) {
+    return t;
+  }
+
+  // higher order function. I'm sorry.
+  static <T> Function<T, T> returningIdentity() {
+    return t -> t;
   }
 
   /**
