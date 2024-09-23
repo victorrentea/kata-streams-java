@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -255,26 +256,29 @@ public class Exercises {
 //    }
 //    return map;
 
-    Map<PaymentMethod, Set<LocalDate>> map =
-        orders.stream().collect(groupingBy(
-            Order::paymentMethod, // KEY
-            mapping(Order::createdOn, toSet()) // VALUE
-        ));
+    //     return orders.stream().collect(groupingBy(Order::paymentMethod));
 
-    Map<PaymentMethod, Map<LocalDate, List<Order>>> olympics =
-        orders.stream().collect(groupingBy(
-            Order::paymentMethod, // KEY
-            groupingBy(Order::createdOn,
-                mapping(Function.identity(), toList())) // VALUE
-        ));
-
-    Map<PaymentMethod, Set<Order>> mapOfOrders =
-        orders.stream().collect(groupingBy(
-            Order::paymentMethod, // KEY
-            mapping(Function.identity(), toSet()) // VALUE
-//            mapping(Exercises.returningIdentity(), toSet()) // VALUE
-//            mapping(Exercises::returnsSame, toSet()) // VALUE
-        ));
+//    ConcurrentHashMap<PaymentMethod, Set<LocalDate>> map =
+//        orders.stream().collect(groupingBy(
+//            Order::paymentMethod, // KEY
+//            ConcurrentHashMap::new,
+//            mapping(Order::createdOn, toSet()) // VALUE
+//        ));
+//
+//    Map<PaymentMethod, Map<LocalDate, List<Order>>> olympics =
+//        orders.stream().collect(groupingBy(
+//            Order::paymentMethod, // KEY
+//            groupingBy(Order::createdOn, // NPE if one order has createdOn = null
+//                mapping(Function.identity(), toList())) // VALUE
+//        ));
+//
+//    Map<PaymentMethod, Set<Order>> mapOfOrders =
+//        orders.stream().collect(groupingBy(
+//            Order::paymentMethod, // KEY
+//            mapping(Function.identity(), toSet()) // VALUE
+////            mapping(Exercises.returningIdentity(), toSet()) // VALUE
+////            mapping(Exercises::returnsSame, toSet()) // VALUE
+//        ));
 
     return orders.stream().collect(groupingBy(Order::paymentMethod));
   }
@@ -292,35 +296,37 @@ public class Exercises {
    * @return the total number of products purchased across all orders (see test)
    */
   public Map<Product, Integer> p9_productCount(List<Order> orders) {
-    List<OrderLine> allLines = new ArrayList<>();
-    for (Order order : orders) {
-      allLines.addAll(order.orderLines());
-    }
-    Map<Product, Integer> result = new HashMap<>();
-    for (OrderLine line : allLines) {
-      int old;
-      if (!result.containsKey(line.product())) {
-        result.put(line.product(), 0);
-        old = 0;
-      } else {
-        old = result.get(line.product());
-      }
-      result.put(line.product(), old + line.count());
-    }
-    return result;
+    return orders.stream()
+        .flatMap(order -> order.orderLines().stream())
+        .collect(groupingBy(OrderLine::product, summingInt(OrderLine::count)));
+//    Map<Product, Integer> result = new HashMap<>();
+//    for (OrderLine line : allLines) {
+//      int old;
+//      if (!result.containsKey(line.product())) {
+//        result.put(line.product(), 0);
+//        old = 0;
+//      } else {
+//        old = result.get(line.product());
+//      }
+//      result.put(line.product(), old + line.count());
+//    }
+//    return result;
   }
 
   /**
    * @return the names of all products from previous exercise, joined with a ","
    */
   public String pA_productNames(List<Order> orders) {
-    Collection<Product> products = p7_productsSorted(orders);
-    StringBuilder sb = new StringBuilder();
-    for (Product product : products) {
-      sb.append(product.name()).append(",");
-    }
-    sb.deleteCharAt(sb.length() - 1); // remove the last comma
-    return sb.toString();
+
+    return p7_productsSorted(orders).stream()
+        .map(Product::name)
+        .collect(joining(","));
+//    StringBuilder sb = new StringBuilder();
+//    for (Product product : products) {
+//      sb.append(product.name()).append(",");
+//    }
+//    sb.deleteCharAt(sb.length() - 1); // remove the last comma
+//    return sb.toString();
   }
 
   /**
