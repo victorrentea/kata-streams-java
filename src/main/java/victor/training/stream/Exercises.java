@@ -137,15 +137,10 @@ public class Exercises {
    * that does NOT contain a special offer line
    */
   public Order p4_maxPriceOrder(List<Order> orders) {
-    List<Order> regularOrders = orders.stream()
+    return orders.stream()
         .filter(order -> !order.hasSpecialOffer())
-        .sorted(Comparator.<Order, Double>comparing(Order::total).reversed())
-        .collect(toList());
-
-//    Collections.sort(regularOrders, Comparator.<Order, Double>comparing(Order::total).reversed());
-
-    if (regularOrders.isEmpty()) return null;
-    return regularOrders.get(0);
+        .max(comparing(Order::total))
+        .orElse(null);
   }
 
   /**
