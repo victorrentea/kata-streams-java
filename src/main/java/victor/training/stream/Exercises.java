@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Exercises {
-  private final OrderMapper orderMapper = new OrderMapper();
 
   public List<OrderDto> p1_activeOrders(List<Order> orders) {
     // TODO 1: simplify
@@ -82,7 +81,7 @@ public class Exercises {
 //        .filter(p) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
 //        .filter((Predicate<Order>)p3) // grab a ref to an instance method from a Type => i will need the instance to call the method on later
         .filter(Order::isCompleted)
-        .map(OrderMapper::toDto)
+        .map(orderMapper::toDto)
         .collect(Collectors.toList());
 //    Function<Order, OrderDto> no = Exercises::toDto; // java compiler won't know on what INSTANCE to call that func
 //    BiFunction<Exercises, Order, OrderDto> aRefToAInstanceMethodWihoutSpecifyingTheInstance =
@@ -94,18 +93,26 @@ public class Exercises {
 //    Function<Order, OrderDto> yess=this::toDto;
     return dtos;
   }
+  // imagine @Inject/@Autowired
+  private OrderMapper orderMapper = new OrderMapper();
 
 
 
   public Order p2_findOrderById(List<Order> orders, int orderId) {
     // TODO 1: rewrite with streams
     // TODO 2: return Optional<> and fix the tests
-    for (Order order : orders) {
-      if (order.id() == orderId) {
-        return order;
-      }
-    }
-    return null;
+//    for (Order order : orders) {
+//      if (order.id() == orderId) {
+//        return order;
+//      }
+//    }
+//    return orders.parallelStream() // useful when doing HEAVY CPU work per element
+    //  .filter(order -> order.id() == orderId)
+//      .findAny() // first one found by any threads (of parallelStream) => faster
+    return orders.stream() // useful when doing HEAVY CPU work per element
+        .filter(order -> order.id() == orderId)
+        .findFirst() // === findAny, but with more exact name if not using paralleStream
+        .orElse(null);
   }
 
   // TODO all the following: rewrite with streams
