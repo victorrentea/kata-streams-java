@@ -15,13 +15,17 @@ public class CreateStream {
         .limit(10)
         .forEach(System.out::println);
 
-    Stream.iterate(
-        fetchPage(0), // first call
-            page1 -> page1.pageNumber < page1.totalPages, // do I have more ?
-            page1 -> fetchPage(page1.pageNumber + 1) // fetch next page
-    )
-        .flatMap(page -> page.rows().stream())
+    streamRecordsFromRemote()
         .forEach(System.out::println); // write it to a file, or my DB...
+  }
+
+  private static Stream<String> streamRecordsFromRemote() {
+    return Stream.iterate(
+            fetchPage(0), // first call
+            prevPage -> prevPage.pageNumber < prevPage.totalPages, // do I have more ?
+            prevPage -> fetchPage(prevPage.pageNumber + 1) // fetch next page
+        )
+        .flatMap(page -> page.rows().stream());
   }
 
   public static Page fetchPage(int pageNumber) {

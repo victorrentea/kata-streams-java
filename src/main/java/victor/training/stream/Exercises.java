@@ -9,6 +9,7 @@ import victor.training.stream.support.Product;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.Month;
@@ -217,6 +218,9 @@ public class Exercises {
     // all the other languages CAN compile it: JS, TS, C#, Kt, Scala
 //    return (int) sum;
 
+    BigDecimal sum = Stream.of(BigDecimal.ONE, BigDecimal.TEN, BigDecimal.TEN)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
     return (int) orders.stream()
         .filter(Order::isCompleted)
 //        .map(Order::total)
@@ -236,7 +240,7 @@ public class Exercises {
     return orders.stream()
         .flatMap(order -> order.orderLines().stream())
         .map(OrderLine::product)
-        .distinct() // remove the dups using equals() ~ like 'distinct' in SQL
+        .distinct()
         .sorted(comparing(Product::name))
         .collect(Collectors.toList());
 //        .collect(toCollection(LinkedHashSet::new));
